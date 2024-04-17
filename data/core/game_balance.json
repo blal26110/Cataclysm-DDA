@@ -162,13 +162,6 @@
   },
   {
     "type": "EXTERNAL_OPTION",
-    "name": "SPAWN_ANIMAL_DENSITY",
-    "info": "A scaling factor that determines density of wild, formerly domesticated and mutated animal spawns.",
-    "stype": "float",
-    "value": 1.0
-  },
-  {
-    "type": "EXTERNAL_OPTION",
     "name": "SPAWN_CITY_HORDE_EXPONENT",
     "info": "City size is raised to this power when calculating zombies to add. 2.0 is equal density for small and large cities.",
     "stype": "float",
@@ -180,6 +173,20 @@
     "info": "Enables larger hordes for larger cities. Does not increase total number of zombies. Default size 10 hordes in size 2 cities, size 80 hordes in size 16 cities",
     "stype": "bool",
     "value": true
+  },
+  {
+    "type": "EXTERNAL_OPTION",
+    "name": "SPAWN_CITY_HORDE_SIZE_MAX",
+    "info": "Maximum horde size with dynamic horde size enabled",
+    "stype": "int",
+    "value": 44
+  },
+  {
+    "type": "EXTERNAL_OPTION",
+    "name": "SPAWN_ANIMAL_DENSITY",
+    "info": "A scaling factor that determines density of wild, formerly domesticated and mutated animal spawns.",
+    "stype": "float",
+    "value": 1.0
   },
   {
     "type": "EXTERNAL_OPTION",

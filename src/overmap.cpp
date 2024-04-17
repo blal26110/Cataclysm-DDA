@@ -6928,7 +6928,7 @@ void overmap::place_mongroups()
         float city_spawn_spread = get_option<float>( "SPAWN_CITY_HORDE_SPREAD" );
         float spawn_density = get_option<float>( "SPAWN_DENSITY" );
         int city_spawn_horde_size = get_option<int>("SPAWN_CITY_HORDE_SIZE");
-
+        int city_spawn_horde_size_max = get_option<int>("SPAWN_CITY_HORDE_SIZE_MAX");
 
 
         for( city &elem : cities ) {
@@ -7013,8 +7013,8 @@ void overmap::place_mongroups()
                             if (this_horde_size < 1) {
                                 continue;
                             }
-                            // Add some more so edges aren't too small. Bulk some up randomly too. 
-                            this_horde_size = this_horde_size + 3 + one_in(4) * elem.size;
+                            // Add some more so edges aren't too small. Bulk some up randomly too, but keep it under the max size. 
+                            this_horde_size = std::min(this_horde_size + 3 + one_in(4) * elem.size, city_spawn_horde_size_max);
                         }
 
                         mongroup m(GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size : desired_zombies);
