@@ -141,10 +141,10 @@
   },
   {
     "type": "EXTERNAL_OPTION",
-    "name": "SPAWN_CITY_HORDE_SMALL_CITY_CHANCE",
-    "info": "Probability of a city smaller than SPAWN_HORDE_THRESHOLD having city zombies spawned, express in 'one in x' fashion .",
+    "name": "SPAWN_CITY_HORDE_SIZE",
+    "info": "How many zombies will be placed in each horde at spawn if dynamic scaling is disabled.",
     "stype": "int",
-    "value": 16
+    "value": 10
   },
   {
     "type": "EXTERNAL_OPTION",
@@ -158,7 +158,7 @@
     "name": "SPAWN_CITY_HORDE_SCALAR",
     "info": "A scaling factor that determines how many zombies are spawned in cites, multiplied by city size, when city hordes are indicated.",
     "stype": "float",
-    "value": 80.0
+    "value": 5.0
   },
   {
     "type": "EXTERNAL_OPTION",
@@ -166,6 +166,20 @@
     "info": "A scaling factor that determines density of wild, formerly domesticated and mutated animal spawns.",
     "stype": "float",
     "value": 1.0
+  },
+  {
+    "type": "EXTERNAL_OPTION",
+    "name": "SPAWN_CITY_HORDE_EXPONENT",
+    "info": "City size is raised to this power when calculating zombies to add. 2.0 is equal density for small and large cities.",
+    "stype": "float",
+    "value": 2.0
+  },
+  {
+    "type": "EXTERNAL_OPTION",
+    "name": "SPAWN_CITY_HORDE_SIZE_IS_DYNAMIC",
+    "info": "Enables larger hordes for larger cities. Does not increase total number of zombies. Default size 10 hordes in size 2 cities, size 80 hordes in size 16 cities",
+    "stype": "bool",
+    "value": true
   },
   {
     "type": "EXTERNAL_OPTION",

@@ -6922,21 +6922,28 @@ void overmap::place_mongroups()
     // Cities can be full of zombies
     int city_spawn_threshold = get_option<int>( "SPAWN_CITY_HORDE_THRESHOLD" );
     if( city_spawn_threshold > -1 ) {
-        int city_spawn_chance = get_option<int>( "SPAWN_CITY_HORDE_SMALL_CITY_CHANCE" );
+        bool horde_size_is_dynamic = get_option<bool>("SPAWN_CITY_HORDE_SIZE_IS_DYNAMIC");
+        float city_spawn_exponent = get_option<float>("SPAWN_CITY_HORDE_EXPONENT");
         float city_spawn_scalar = get_option<float>( "SPAWN_CITY_HORDE_SCALAR" );
         float city_spawn_spread = get_option<float>( "SPAWN_CITY_HORDE_SPREAD" );
         float spawn_density = get_option<float>( "SPAWN_DENSITY" );
+        int city_spawn_horde_size = get_option<int>("SPAWN_CITY_HORDE_SIZE");
+
+
 
         for( city &elem : cities ) {
-            if( elem.size > city_spawn_threshold || !one_in( city_spawn_chance ) ) {
+
+            // Scale chance of hordes to city spawn threshold.
+            if (elem.size >= city_spawn_threshold ? true : one_in(city_spawn_threshold - elem.size + 1)) {
 
                 // with the default numbers (80 scalar, 1 density), a size 16 city
                 // will produce 1280 zombies.
-                int desired_zombies = elem.size * city_spawn_scalar * spawn_density;
+                int desired_zombies = pow(elem.size, city_spawn_exponent) * city_spawn_scalar * spawn_density;
+                int this_horde_size = city_spawn_horde_size;
 
-                float city_effective_radius = elem.size * city_spawn_spread;
+                float city_effective_radius = elem.size * city_spawn_spread; 
 
-                int city_distance_increment = std::ceil( city_effective_radius / 4 );
+                int city_distance_increment = std::ceil( city_effective_radius / 4 ); 
 
                 tripoint_abs_omt city_center = project_combine( elem.pos_om, tripoint_om_omt( elem.pos, 0 ) );
 
@@ -6997,7 +7004,20 @@ void overmap::place_mongroups()
                         if( desired_zombies <= 0 ) {
                             break;
                         }
-                        mongroup m( GROUP_ZOMBIE, s, desired_zombies > 10 ? 10 : desired_zombies );
+
+                        // Hordes are larger near the city center
+                        if (horde_size_is_dynamic) {
+                            tripoint_abs_omt this_omt = project_to<coords::omt>(s);
+                            int distance_from_center = static_cast<int>(trig_dist(this_omt, city_center));
+                            this_horde_size = (city_effective_radius - distance_from_center + 1);
+                            if (this_horde_size < 1) {
+                                continue;
+                            }
+                            // Add some more so edges aren't too small. Bulk some up randomly too. 
+                            this_horde_size = this_horde_size + 3 + one_in(4) * elem.size;
+                        }
+
+                        mongroup m(GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size : desired_zombies);
 
                         // with wander_spawns (aka wandering hordes) off, these become 'normal'
                         // zombie spawns and behave like ants, triffids, fungals, etc.
@@ -7008,7 +7028,7 @@ void overmap::place_mongroups()
                             m.wander( *this );
                         }
                         add_mon_group( m );
-                        desired_zombies -= 10;
+                        desired_zombies -= this_horde_size;
                     }
                 }
             }
