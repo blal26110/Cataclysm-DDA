@@ -6927,7 +6927,6 @@ void overmap::place_mongroups()
         float city_spawn_scalar = get_option<float>( "SPAWN_CITY_HORDE_SCALAR" );
         float city_spawn_spread = get_option<float>( "SPAWN_CITY_HORDE_SPREAD" );
         float spawn_density = get_option<float>( "SPAWN_DENSITY" );
-        int city_spawn_horde_size = get_option<int>("SPAWN_CITY_HORDE_SIZE");
         int city_spawn_horde_size_min = get_option<int>("SPAWN_CITY_HORDE_SIZE_MIN");
         int city_spawn_horde_size_max = get_option<int>("SPAWN_CITY_HORDE_SIZE_MAX");
 
@@ -6939,11 +6938,11 @@ void overmap::place_mongroups()
                 // with the default numbers (2 power, 5 scalar, 1 density), a size 16 city
                 // will produce 1280 zombies.
                 int desired_zombies = pow(elem.size, city_spawn_exponent) * city_spawn_scalar * spawn_density;
-                int this_horde_size = city_spawn_horde_size;
+                int this_horde_size = city_spawn_horde_size_min;
 
-                float city_effective_radius = elem.size * city_spawn_spread; 
+                float city_effective_radius = elem.size * city_spawn_spread;
 
-                int city_distance_increment = std::ceil( city_effective_radius / 4 ); 
+                int city_distance_increment = std::ceil( city_effective_radius / 4 );
 
                 tripoint_abs_omt city_center = project_combine( elem.pos_om, tripoint_om_omt( elem.pos, 0 ) );
 

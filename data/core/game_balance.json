@@ -141,13 +141,6 @@
   },
   {
     "type": "EXTERNAL_OPTION",
-    "name": "SPAWN_CITY_HORDE_SIZE",
-    "info": "How many zombies will be placed in each horde at spawn if dynamic scaling is disabled.",
-    "stype": "int",
-    "value": 10
-  },
-  {
-    "type": "EXTERNAL_OPTION",
     "name": "SPAWN_CITY_HORDE_SPREAD",
     "info": "A scaling factor that determines how far from the center of cities extra zombies spawn, multiplied by city size, when city hordes are indicated.",
     "stype": "float",
@@ -177,7 +170,7 @@
   {
     "type": "EXTERNAL_OPTION",
     "name": "SPAWN_CITY_HORDE_SIZE_MIN",
-    "info": "Minimum horde size with dynamic horde size enabled.",
+    "info": "Minimum horde size with dynamic horde size enabled. Default horde size if dynamic horde size is disabled",
     "stype": "int",
     "value": 10
   },
