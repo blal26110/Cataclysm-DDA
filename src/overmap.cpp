@@ -6928,15 +6928,15 @@ void overmap::place_mongroups()
         float city_spawn_spread = get_option<float>( "SPAWN_CITY_HORDE_SPREAD" );
         float spawn_density = get_option<float>( "SPAWN_DENSITY" );
         int city_spawn_horde_size = get_option<int>("SPAWN_CITY_HORDE_SIZE");
+        int city_spawn_horde_size_min = get_option<int>("SPAWN_CITY_HORDE_SIZE_MIN");
         int city_spawn_horde_size_max = get_option<int>("SPAWN_CITY_HORDE_SIZE_MAX");
-
 
         for( city &elem : cities ) {
 
             // Scale chance of hordes to city spawn threshold.
             if (elem.size >= city_spawn_threshold ? true : one_in(city_spawn_threshold - elem.size + 1)) {
 
-                // with the default numbers (80 scalar, 1 density), a size 16 city
+                // with the default numbers (2 power, 5 scalar, 1 density), a size 16 city
                 // will produce 1280 zombies.
                 int desired_zombies = pow(elem.size, city_spawn_exponent) * city_spawn_scalar * spawn_density;
                 int this_horde_size = city_spawn_horde_size;
@@ -7005,16 +7005,17 @@ void overmap::place_mongroups()
                             break;
                         }
 
-                        // Hordes are larger near the city center
+                        // Hordes are larger near the city center, size decreases with distance.
                         if (horde_size_is_dynamic) {
                             tripoint_abs_omt this_omt = project_to<coords::omt>(s);
                             int distance_from_center = static_cast<int>(trig_dist(this_omt, city_center));
-                            this_horde_size = (city_effective_radius - distance_from_center + 1);
+                            float density_curve = ( cos (M_PI * distance_from_center/city_effective_radius) + 1 ) ;
+                            this_horde_size = std::ceil(city_effective_radius * density_curve);
                             if (this_horde_size < 1) {
                                 continue;
                             }
-                            // Add some more so edges aren't too small. Bulk some up randomly too, but keep it under the max size. 
-                            this_horde_size = std::min(this_horde_size + 3 + one_in(4) * elem.size, city_spawn_horde_size_max);
+                            // Enforce minimum and maximum. 
+                            this_horde_size = std::clamp(this_horde_size, city_spawn_horde_size_min, city_spawn_horde_size_max);
                         }
 
                         mongroup m(GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size : desired_zombies);
