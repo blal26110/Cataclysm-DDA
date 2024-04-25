@@ -7005,23 +7005,22 @@ void overmap::place_mongroups()
                         // Hordes are larger near the city center, size decreases with distance.
                         if( horde_size_is_dynamic ) {
                             tripoint_abs_omt this_omt = project_to<coords::omt>( s );
-                            int distance_from_center = trig_dist(this_omt, city_center);
+                            int distance_from_center = trig_dist( this_omt, city_center );
                             int target_city_radius = 16;
-                            this_horde_size = std::clamp( static_cast<int>( (city_spawn_horde_size_max * elem.size) /
+                            this_horde_size = std::clamp( static_cast<int>( ( city_spawn_horde_size_max * elem.size ) /
                                                           target_city_radius ) - distance_from_center, city_spawn_horde_size_min,
                                                           city_spawn_horde_size_max );
 
                             // Change behavior for large cities
-                            //
+                            // Horde size decreases at the extremes, spacing out large hordes in the center and reducing density at the in the suburbs
                             if( elem.size > target_city_radius ) {
                                 if( distance_from_center > elem.size && one_in( city_effective_radius - distance_from_center ) ) {
                                     continue;
                                     // hordes decrease as you approach the center of a city (otherwise too many larger hordes)
-                                } else if( one_in(city_spawn_horde_size_max - this_horde_size + 3 ) ) {
+                                } else if( one_in( city_spawn_horde_size_max - this_horde_size + 3 ) ) {
                                     continue;
                                 }
                             }
-
                         }
 
                         mongroup m( GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size :
