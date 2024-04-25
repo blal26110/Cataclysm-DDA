@@ -6922,24 +6922,25 @@ void overmap::place_mongroups()
     // Cities can be full of zombies
     int city_spawn_threshold = get_option<int>( "SPAWN_CITY_HORDE_THRESHOLD" );
     if( city_spawn_threshold > -1 ) {
-        bool horde_size_is_dynamic = get_option<bool>("SPAWN_CITY_HORDE_SIZE_IS_DYNAMIC");
-        float city_spawn_exponent = get_option<float>("SPAWN_CITY_HORDE_EXPONENT");
+        bool horde_size_is_dynamic = get_option<bool>( "SPAWN_CITY_HORDE_SIZE_IS_DYNAMIC" );
+        float city_spawn_exponent = get_option<float>( "SPAWN_CITY_HORDE_EXPONENT" );
         float city_spawn_scalar = get_option<float>( "SPAWN_CITY_HORDE_SCALAR" );
         float spawn_density = get_option<float>( "SPAWN_DENSITY" );
-        int city_spawn_horde_size_min = get_option<int>("SPAWN_CITY_HORDE_SIZE_MIN");
-        int city_spawn_horde_size_max = get_option<int>("SPAWN_CITY_HORDE_SIZE_MAX");
+        int city_spawn_horde_size_min = get_option<int>( "SPAWN_CITY_HORDE_SIZE_MIN" );
+        int city_spawn_horde_size_max = get_option<int>( "SPAWN_CITY_HORDE_SIZE_MAX" );
 
         for( city &elem : cities ) {
 
             // Scale chance of hordes to city spawn threshold.
-            if ( elem.size >= city_spawn_threshold ? true : one_in( std::pow( city_spawn_threshold - elem.size, 2 ) ) ) {
+            if( elem.size >= city_spawn_threshold ? true : one_in( std::pow( city_spawn_threshold - elem.size,
+                    2 ) ) ) {
 
                 // with the default numbers (2 power, 5 scalar, 1 density), a size 16 city
                 // will produce 1280 zombies.
                 int desired_zombies = pow( elem.size, city_spawn_exponent ) * city_spawn_scalar * spawn_density;
                 int this_horde_size = city_spawn_horde_size_min;
 
-                float city_effective_radius = elem.size + std::sqrt(elem.size);
+                float city_effective_radius = elem.size + std::sqrt( elem.size );
 
                 tripoint_abs_omt city_center = project_combine( elem.pos_om, tripoint_om_omt( elem.pos, 0 ) );
 
@@ -6976,7 +6977,7 @@ void overmap::place_mongroups()
                             //    local_sm_list.resize( new_size );
 
                             //}
-                            submap_list.insert(submap_list.end(), local_sm_list.begin(), local_sm_list.end());
+                            submap_list.insert( submap_list.end(), local_sm_list.begin(), local_sm_list.end() );
 
                         }
                     }
@@ -7002,37 +7003,29 @@ void overmap::place_mongroups()
                         }
 
                         // Hordes are larger near the city center, size decreases with distance.
-                        if ( horde_size_is_dynamic ) {
+                        if( horde_size_is_dynamic ) {
                             tripoint_abs_omt this_omt = project_to<coords::omt>( s );
-                            int distance_from_center = static_cast<int>( trig_dist( this_omt, city_center ) );
+                            int distance_from_center = trig_dist(this_omt, city_center);
+                            int target_city_radius = 16;
+                            this_horde_size = std::clamp( static_cast<int>( (city_spawn_horde_size_max * elem.size) /
+                                                          target_city_radius ) - distance_from_center, city_spawn_horde_size_min,
+                                                          city_spawn_horde_size_max );
 
-                            // Size the horde and fit it to a normalized curve.
-                            int this_horde_size_max = std::min( elem.size * city_spawn_horde_size_max / 16, city_spawn_horde_size_max );
-                            float horde_size_curve = ( cos( M_PI * distance_from_center / city_effective_radius ) + 1 ) / 2;
-                            this_horde_size = static_cast<int>(this_horde_size_max * horde_size_curve);
-
-                            float horde_chance_curve = 100;
-                            if (this_horde_size < city_spawn_horde_size_min) {
-                                // hordes decrease as you approach the edge of a city
-                                horde_chance_curve = 33 + ( 67 * cos( ( M_PI / 2 ) * ( city_spawn_horde_size_min - this_horde_size ) / city_spawn_horde_size_min ) );
-                            }
-                            else {
-                                // hordes decrease as you approach the center of a city
-                                horde_chance_curve = 67 + ( 33 * cos( ( M_PI / 2 ) * ( this_horde_size - city_spawn_horde_size_min ) / ( city_spawn_horde_size_max - city_spawn_horde_size_min ) ) );
+                            // Change behavior for large cities
+                            //
+                            if( elem.size > target_city_radius ) {
+                                if( distance_from_center > elem.size && one_in( city_effective_radius - distance_from_center ) ) {
+                                    continue;
+                                    // hordes decrease as you approach the center of a city (otherwise too many larger hordes)
+                                } else if( one_in(city_spawn_horde_size_max - this_horde_size + 3 ) ) {
+                                    continue;
+                                }
                             }
 
-                            // Skip a portion of hordes based on size. Not sure why this causes freezes on worldgen. It should just loop until out of zombies.
-                            // 
-                            if ( rng( 0, 100 ) > horde_chance_curve ) {
-                                this_horde_size = 0;
-                            }
-                            else {
-                                this_horde_size = std::max( this_horde_size, city_spawn_horde_size_min );
-                            }
-                            
                         }
 
-                        mongroup m(GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size : desired_zombies);
+                        mongroup m( GROUP_ZOMBIE, s, desired_zombies > this_horde_size ? this_horde_size :
+                                    desired_zombies );
 
                         // with wander_spawns (aka wandering hordes) off, these become 'normal'
                         // zombie spawns and behave like ants, triffids, fungals, etc.
